@@ -148,6 +148,234 @@ resource "aws_cloudwatch_log_group" "aft_account_customizations_terraform" {
   retention_in_days = var.cloudwatch_log_group_retention
 }
 
+
+
+
+#####################################################
+# AFT Account Customizations Terraform VPC
+#####################################################
+
+resource "aws_codebuild_project" "aft_account_customizations_terraform_vpc" {
+  depends_on     = [aws_cloudwatch_log_group.aft_account_customizations_vpc_terraform, time_sleep.wait_for_iam_eventual_consistency]
+  name           = "aft-account-customizations-vpc-terraform"
+  description    = "Job to apply Terraform provided by the customer account customizations repo vpc"
+  build_timeout  = tostring(var.global_codebuild_timeout)
+  service_role   = aws_iam_role.aft_codebuild_customizations_role.arn
+  encryption_key = var.aft_kms_key_arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_MEDIUM"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    environment_variable {
+      name  = "AWS_PARTITION"
+      value = data.aws_partition.current.partition
+      type  = "PLAINTEXT"
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name = aws_cloudwatch_log_group.aft_account_customizations_vpc_terraform.name
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "${aws_s3_bucket.aft_codepipeline_customizations_bucket.id}/aft-account-customizations-vpc-terraform-logs"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = data.local_file.aft_account_customizations_vpc_terraform.content
+  }
+
+  dynamic "vpc_config" {
+    for_each = var.aft_enable_vpc ? [1] : []
+
+    content {
+      vpc_id             = var.aft_vpc_id
+      subnets            = var.aft_vpc_private_subnets
+      security_group_ids = var.aft_vpc_default_sg
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [project_visibility]
+  }
+
+}
+
+# Maintain this log group for log retention reasons. This is no longer used by AFT
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_vpc_api_helpers" {
+  name              = "/aws/codebuild/aft-account-customizations-vpc-api-helpers"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_vpc_terraform" {
+  name              = "/aws/codebuild/aft-account-customizations-vpc-terraform"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+
+
+#####################################################
+# AFT Account Customizations Terraform IAM
+#####################################################
+
+resource "aws_codebuild_project" "aft_account_customizations_terraform_iam" {
+  depends_on     = [aws_cloudwatch_log_group.aft_account_customizations_iam_terraform, time_sleep.wait_for_iam_eventual_consistency]
+  name           = "aft-account-customizations-iam-terraform"
+  description    = "Job to apply Terraform provided by the customer account customizations repo iam"
+  build_timeout  = tostring(var.global_codebuild_timeout)
+  service_role   = aws_iam_role.aft_codebuild_customizations_role.arn
+  encryption_key = var.aft_kms_key_arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_MEDIUM"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    environment_variable {
+      name  = "AWS_PARTITION"
+      value = data.aws_partition.current.partition
+      type  = "PLAINTEXT"
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name = aws_cloudwatch_log_group.aft_account_customizations_iam_terraform.name
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "${aws_s3_bucket.aft_codepipeline_customizations_bucket.id}/aft-account-customizations-iam-terraform-logs"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = data.local_file.aft_account_customizations_iam_terraform.content
+  }
+
+  dynamic "vpc_config" {
+    for_each = var.aft_enable_vpc ? [1] : []
+
+    content {
+      vpc_id             = var.aft_vpc_id
+      subnets            = var.aft_vpc_private_subnets
+      security_group_ids = var.aft_vpc_default_sg
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [project_visibility]
+  }
+
+}
+
+# Maintain this log group for log retention reasons. This is no longer used by AFT
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_iam_api_helpers" {
+  name              = "/aws/codebuild/aft-account-customizations-iam-api-helpers"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_iam_terraform" {
+  name              = "/aws/codebuild/aft-account-customizations-iam-terraform"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+
+
+#####################################################
+# AFT Account Customizations Terraform SG
+#####################################################
+
+resource "aws_codebuild_project" "aft_account_customizations_terraform_sg" {
+  depends_on     = [aws_cloudwatch_log_group.aft_account_customizations_sg_terraform, time_sleep.wait_for_iam_eventual_consistency]
+  name           = "aft-account-customizations-sg-terraform"
+  description    = "Job to apply Terraform provided by the customer account customizations repo sg"
+  build_timeout  = tostring(var.global_codebuild_timeout)
+  service_role   = aws_iam_role.aft_codebuild_customizations_role.arn
+  encryption_key = var.aft_kms_key_arn
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type                = "BUILD_GENERAL1_MEDIUM"
+    image                       = "aws/codebuild/amazonlinux2-x86_64-standard:5.0"
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    environment_variable {
+      name  = "AWS_PARTITION"
+      value = data.aws_partition.current.partition
+      type  = "PLAINTEXT"
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name = aws_cloudwatch_log_group.aft_account_customizations_sg_terraform.name
+    }
+
+    s3_logs {
+      status   = "ENABLED"
+      location = "${aws_s3_bucket.aft_codepipeline_customizations_bucket.id}/aft-account-customizations-sg-terraform-logs"
+    }
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = data.local_file.aft_account_customizations_sg_terraform.content
+  }
+
+  dynamic "vpc_config" {
+    for_each = var.aft_enable_vpc ? [1] : []
+
+    content {
+      vpc_id             = var.aft_vpc_id
+      subnets            = var.aft_vpc_private_subnets
+      security_group_ids = var.aft_vpc_default_sg
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [project_visibility]
+  }
+
+}
+
+# Maintain this log group for log retention reasons. This is no longer used by AFT
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_sg_api_helpers" {
+  name              = "/aws/codebuild/aft-account-customizations-sg-api-helpers"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+#tfsec:ignore:aws-cloudwatch-log-group-customer-key
+resource "aws_cloudwatch_log_group" "aft_account_customizations_sg_terraform" {
+  name              = "/aws/codebuild/aft-account-customizations-sg-terraform"
+  retention_in_days = var.cloudwatch_log_group_retention
+}
+
+
+
 #####################################################
 # AFT Account Provisioning Framework SFN - aft-create-pipeline
 #####################################################

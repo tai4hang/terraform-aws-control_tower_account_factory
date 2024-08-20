@@ -26,6 +26,15 @@ data "local_file" "aft_account_customizations_terraform" {
   filename = "${path.module}/buildspecs/aft-account-customizations-terraform.yml"
 }
 
+data "local_file" "aft_account_customizations_vpc_terraform" {
+  filename = "${path.module}/buildspecs/aft-account-customizations-vpc-terraform.yml"
+}
+data "local_file" "aft_account_customizations_iam_terraform" {
+  filename = "${path.module}/buildspecs/aft-account-customizations-iam-terraform.yml"
+}
+data "local_file" "aft_account_customizations_sg_terraform" {
+  filename = "${path.module}/buildspecs/aft-account-customizations-sg-terraform.yml"
+}
 data "local_file" "aft_create_pipeline" {
   filename = "${path.module}/buildspecs/aft-create-pipeline.yml"
 }

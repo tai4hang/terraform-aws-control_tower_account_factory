@@ -58,6 +58,7 @@ resource "aws_codepipeline" "aft_codecommit_customizations_codepipeline" {
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
+      input_artifacts  = ["source-aft-account-customizations"]
       output_artifacts = ["source-aft-account-customizations-vpc"]
 
       configuration = {
@@ -73,6 +74,7 @@ resource "aws_codepipeline" "aft_codecommit_customizations_codepipeline" {
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
+      input_artifacts  = ["source-aft-account-customizations"]
       output_artifacts = ["source-aft-account-customizations-iam"]
 
       configuration = {
@@ -88,6 +90,7 @@ resource "aws_codepipeline" "aft_codecommit_customizations_codepipeline" {
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
+      input_artifacts  = ["source-aft-account-customizations-vpc"]
       output_artifacts = ["source-aft-account-customizations-sg"]
 
       configuration = {
